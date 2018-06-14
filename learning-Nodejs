@@ -1,0 +1,41 @@
+var fs = require('fs');
+var http = require('http');
+var util = require('util');
+var url = require('url');
+location = {};
+var path = require('path');
+
+var address = 'http://172.10.1.68/sabrinavideo.html';
+q = url.parse(address, true);
+console.log(q.pathname);
+
+// Start the server
+http.createServer(function(req, res) {
+
+        res.writeHead(200, {'Content-Type': 'text/html'});
+   if (req.url != '/sabrinavideo') {
+req.end('Unauthorised');
+}
+    // Retrieve last modified time
+    var lastModifiedTime = process.env.lastModifiedTime;
+    console.log(process.env.lastModifiedTime);
+    if (process.env.lastModifiedTime === undefined) {
+        // Set 0 to always triger to always run for the first time
+        process.env.lastModifiedTime = 0;
+
+    }
+
+    // Retrieve last modified file timestamp
+    var fileStatistic = fs.statSync('sabrinavideo.html');
+    var fileModifiedTime = new Date(util.inspect(fileStatistic.mtime));
+
+    // We use == instead of === because one is a date time and one is a string
+    if (process.env.lastModifiedTime == fileModifiedTime) {
+        res.end('No modified made');
+    } else {
+        var content = fs.readFileSync('sabrinavideo.html', 'utf8');
+        process.env.lastModifiedTime = fileModifiedTime;
+        res.end(content);
+    }
+
+}).listen(80, '172.10.1.68');
